@@ -40,7 +40,9 @@ feh --bg-scale ${FILENAME};
 
 if [ "$PERSIST" == "1" ];
 then
-    echo ~/.fehbg & >> ~/.xinitrc
+    FPATH=`realpath screddit.sh`
+    OWNER=`ls -l ${FPATH} | awk '{print $3}'`
+    echo "~/.fehbg &" >> "/home/${OWNER}/.xinitrc"
 fi
 
 
