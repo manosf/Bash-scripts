@@ -11,8 +11,8 @@ do
         --help|-h)
             HELP="1";
             ;;
-        --filename|-f)
-            FILENAME=$2;
+        --directory|-d)
+            DIRECTORY=$2;
             shift 2
             ;;
         --subreddit|-s)
@@ -29,20 +29,27 @@ done
 if [ "$HELP" == "1" ];
 then
     printf "Options and arguments:\n"
-    echo "-f | --filename specifies a name for the wallpaper."
+    echo "-d | --directory specifies a directory to store the wallpapers."
     echo "-s | --subreddit specifies which subreddit to search."
     echo "-p | --persist makes the wallpaper changes persist after rebooting."
     exit 1
 fi
 
-wget -nc -O - "https://www.reddit.com/r/${SUBREDDIT}/top/?sort=top&t=week" | grep -oE 'https://i.imgur.com/[a-zA-Z0-9]+.jpg' | shuf -n 1 | xargs wget -O ${FILENAME}; 
-feh --bg-scale ${FILENAME};
+wget -nc -O - "https://www.reddit.com/r/${SUBREDDIT}/top/?sort=top&t=week" | grep -oE 'https://i.imgur.com/[a-zA-Z0-9]+.jpg' | xargs wget -r -l 5 -nc -P ${DIRECTORY}; 
+
+printf "Wallpapers downloaded and saved in ${DIRECTORY}.\n"
+printf "Do you want to select the ones you want now?[y/N]: "
+read RESPONSE
+case $RESPONSE in
+        [Yy] | [Yy][Ee][Ss])
+        2>/dev/null xdg-open `realpath ${DIRECTORY}` &
+    ;;
+esac
+
 
 if [ "$PERSIST" == "1" ];
 then
-    FPATH=`realpath screddit.sh`
-    OWNER=`ls -l ${FPATH} | awk '{print $3}'`
-    echo "~/.fehbg &" >> "/home/${OWNER}/.xinitrc"
+    DPATH=`realpath ${DIRECTORY}`
+    OWNER=`ls -l ${DPATH} | awk '{print $3}'`
+    echo "feh --bg-max --randomize --no-fehbg ${DIRECTORY}/i.imgur.com/*" >> "/home/${OWNER}/.fehbg"
 fi
-
-
