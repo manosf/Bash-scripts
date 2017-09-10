@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+#Default values
+DIRECTORY="reddit_wallpapers"
+RESOLUTION="1920x1080"
+SUBREDDIT="spaceporn"
+
+
 if [ "$EUID" != "0" ]; then
     echo "This script must be run as root" 1>&2
     exit 
@@ -19,6 +25,10 @@ do
             SUBREDDIT=$2;
             shift 2
             ;;
+        --resolution|-r)
+            RESOLUTION=$2;
+            shift 2
+            ;;
         --persist|-p)
             PERSIST="1";
             shift
@@ -35,10 +45,10 @@ then
     exit 1
 fi
 
-wget -nc -O - "https://www.reddit.com/r/${SUBREDDIT}/top/?sort=top&t=week" | grep -oE 'https://i.imgur.com/[a-zA-Z0-9]+.jpg' | xargs wget -r -l 5 -nc -P ${DIRECTORY}; 
+wget -O - "https://www.reddit.com/r/${SUBREDDIT}/top/?sort=top&t=week" | grep -oE 'https://i.(imgur.com|redd.it)/[a-zA-Z0-9]+.jpg' | xargs wget -r -l 5 -nc -P ${DIRECTORY}; 
 
 printf "Wallpapers downloaded and saved in ${DIRECTORY}.\n"
-printf "Do you want to select the ones you want now?[y/N]: "
+printf "Select the ones you want now?[y/N]: "
 read RESPONSE
 case $RESPONSE in
         [Yy] | [Yy][Ee][Ss])
