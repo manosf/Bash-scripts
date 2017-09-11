@@ -59,7 +59,8 @@ esac
 
 if [ "$PERSIST" == "1" ];
 then
-    DPATH=`realpath ${DIRECTORY}`
-    OWNER=`ls -l ${DPATH} | awk '{print $3}'`
-    echo "feh --bg-max --randomize --no-fehbg ${DIRECTORY}/i.imgur.com/*" >> "/home/${OWNER}/.fehbg"
+    DPATH=`realpath ${DIRECTORY} | rev | cut -d'/' -f2- | rev`    #Get the absolute path of $DIRECTORY and strip the $DIRECTORY from it
+    OWNER=`ls -la ${DPATH}| sed -n 2p | awk '{print $3}'`         #Get the owner of $DIRECTORY's parent directory
+    `chown -R ${OWNER} ${DPATH}`
+    printf "#!/bin/sh\nfeh --bg-scale --randomize --no-fehbg ${DPATH}/${DIRECTORY}/i.redd.it/*" > "/home/${OWNER}/.fehbg"
 fi
