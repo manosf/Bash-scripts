@@ -4,7 +4,7 @@
 DIRECTORY="reddit_wallpapers"
 RESOLUTION="1920x1080"
 SUBREDDIT="spaceporn"
-
+JFILE="reddit_data.json"
 
 if [ "$EUID" != "0" ]; then
     echo "This script must be run as root" 1>&2
@@ -16,6 +16,10 @@ do
     case $args in
         --help|-h)
             HELP="1";
+            ;;
+        --file|-f)
+            JFILE=$2;
+            shift 2
             ;;
         --directory|-d)
             DIRECTORY=$2;
@@ -45,7 +49,15 @@ then
     exit 1
 fi
 
-wget -O - "https://www.reddit.com/r/${SUBREDDIT}/top/?sort=top&t=week" | grep -oE 'https://i.(imgur.com|redd.it)/[a-zA-Z0-9]+.jpg' | xargs wget -r -l 5 -nc -P ${DIRECTORY}; 
+curl -o ${JFILE} "https://www.reddit.com/r/${SUBREDDIT}/.json"
+
+for CHILD in `jq '.data.children[].data.url' ${JSFILE}`;
+do
+    if [[${CHILD} == *"https://i.imgur.com/"* or ${CHILD} == *"https://i.redd.it/"* ]];
+    then
+        wget -P ${DIRECTORY} ${CHILD}
+    fi
+done
 
 printf "Wallpapers downloaded and saved in ${DIRECTORY}.\n"
 printf "Select the ones you want now?[y/N]: "
