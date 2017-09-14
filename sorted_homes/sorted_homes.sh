@@ -1,4 +1,5 @@
 #!/bin/bash
+FILE="homes_sorted.txt"
 
 for args in $*
 do
