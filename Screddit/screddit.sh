@@ -43,19 +43,24 @@ done
 if [ "$HELP" == "1" ];
 then
     printf "Options and arguments:\n"
+    echo "-f | --file specifies a file to store JSON data."
     echo "-d | --directory specifies a directory to store the wallpapers."
     echo "-s | --subreddit specifies which subreddit to search."
     echo "-p | --persist makes the wallpaper changes persist after rebooting."
     exit 1
 fi
 
-curl -o ${JFILE} "https://www.reddit.com/r/${SUBREDDIT}/.json"
+#Changing User-Agent to bypass reddit's problem with curl's user-agent.  
+curl -A "Mozilla/5.0 (X11; Linux x86_64; rv:55.0) Gecko/20100101 Firefox/55.0" -o ${JFILE} "https://www.reddit.com/r/${SUBREDDIT}/.json"
 
-for CHILD in `jq '.data.children[].data.url' ${JSFILE}`;
+#Iterating over every post and download only the images that match the specified domain.
+END=`jq '.data.children|length' ${JFILE}`
+for ((CHILD=0; CHILD<$END; CHILD++))
 do
-    if [[${CHILD} == *"https://i.imgur.com/"* or ${CHILD} == *"https://i.redd.it/"* ]];
+    if [[ `jq -r ".data.children[$CHILD].data.domain" ${JFILE}` == "i.redd.it" ]];
     then
-        wget -P ${DIRECTORY} ${CHILD}
+        URL=`jq -r ".data.children[$CHILD].data.url" ${JFILE}`
+        wget -nc -P ${DIRECTORY} ${URL}
     fi
 done
 
