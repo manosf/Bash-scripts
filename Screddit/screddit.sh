@@ -59,18 +59,22 @@ END=`jq '.data.children|length' ${JFILE}`
 for ((CHILD=0; CHILD<$END; CHILD++))
 do
     DATA=`jq ".data.children[$CHILD]" ${JFILE}`
+    RES=`echo ${DATA} | jq -r '.data.preview.images[].source.width'`x`echo ${DATA} | jq -r '.data.preview.images[].source.height'`
     DOMAIN=`echo ${DATA} | jq -r '.data.domain'`
     for DOM in ${DOMAINLIST}
     do
         if [[ "$DOM" == "$DOMAIN" ]];
         then
-            URL=`echo ${DATA} | jq -r '.data.url'`
-            wget -nc -P ${DIRECTORY} ${URL}
+            if [[ "$RES" == "$RESOLUTION" ]];
+            then
+                URL=`echo ${DATA} | jq -r '.data.url'`
+                wget -nc -P ${DIRECTORY} ${URL}
+            fi
         fi
     done
 done
 
-printf "Wallpapers downloaded and saved in ${DIRECTORY}.\n"
+printf "All wallpapers that matched your criteria downloaded and saved in ${DIRECTORY}.\n"
 printf "Select the ones you want now?[y/N]: "
 read RESPONSE
 case $RESPONSE in
