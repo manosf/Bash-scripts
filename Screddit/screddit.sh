@@ -6,6 +6,8 @@ RESOLUTION="1920x1080"
 SUBREDDIT="spaceporn"
 JFILE="reddit_data.json"
 DOMAINLIST="i.redd.it i.imgur.com"
+STARTUPFILES=".xinitrc .Xsession autostart"
+
 
 if [ "$EUID" != "0" ]; then
     echo "This script must be run as root" 1>&2
@@ -90,4 +92,14 @@ then
     OWNER=`ls -la ${DPATH}| sed -n 2p | awk '{print $3}'`         #Get the owner of $DIRECTORY's parent directory
     `chown -R ${OWNER} ${DPATH}`
     printf "#!/bin/sh\nfeh --bg-scale --randomize --no-fehbg ${DPATH}/${DIRECTORY}/*" > "/home/${OWNER}/.fehbg"
+    for STARTUP in ${STARTUPFILES}
+    do
+        if [ -f "/home/${OWNER}/${STARTUP}" ];
+        then
+            echo "~/.fehbg &" >> "/home/${OWNER}/"
+        elif [ -f "/home/${OWNER}/.config/${STARTUP}" ]
+        then 
+            echo "~/.fehbg &" >> "/home/${OWNER}/.config/openbox/autostart"
+        fi
+    done
 fi
